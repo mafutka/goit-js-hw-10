@@ -1,23 +1,38 @@
-name: Build and deploy to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main  # або інша основна гілка
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v2.3.1
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Install and build 🔧
-        run: |
-          npm install
-          npm run build
-
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@4.1.0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          branch: gh-pages
-          folder: dist
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build  # Впевнись, що скрипт `build` у package.json створює `dist/`
+
+      - name: Move build to docs
+        run: |
+          rm -rf docs
+          mv dist docs
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs
+          git commit -m "Deploy to GitHub Pages"
+          git push
